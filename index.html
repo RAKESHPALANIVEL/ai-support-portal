@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vision Support</title>
+  <meta name="description" content="Customer support portal with an AI-assisted support team dashboard" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎧</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- =====================================================
+     1) CUSTOMER WEBSITE  (public – no login required)
+     ===================================================== -->
+<div id="view-customer" hidden>
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="#/"><span class="logo" data-icon="shield" data-size="20"></span>Vision Support</a>
+      <a class="btn btn-outline" href="#/support/login"><span data-icon="user" data-size="16"></span>Support Team Login</a>
+    </div>
+  </header>
+
+  <main class="container hero">
+    <section class="hero-text">
+      <span class="pill"><span data-icon="sparkles" data-size="14"></span>AI-assisted support</span>
+      <h1>How can we help you today?</h1>
+      <p class="lead">Tell us what went wrong. Our AI reads your request, routes it to the right team and flags urgent issues, so a support specialist can respond faster.</p>
+      <ul class="points">
+        <li><span class="pt-ic" data-icon="sparkles"></span><div><b>Smart triage</b><span>Your request is categorised and prioritised automatically.</span></div></li>
+        <li><span class="pt-ic" data-icon="clock"></span><div><b>Faster responses</b><span>Urgent problems such as outages and payment issues are escalated first.</span></div></li>
+        <li><span class="pt-ic" data-icon="shield"></span><div><b>No account needed</b><span>Submit a request in under a minute. No sign-up or login.</span></div></li>
+      </ul>
+    </section>
+
+    <section class="card form-card">
+      <form id="ticketForm" novalidate>
+        <h2>Submit a support request</h2>
+        <p class="muted">Fields marked * are required.</p>
+        <div class="two">
+          <label class="fld"><span>Full name *</span><input id="cName" class="input" maxlength="80" autocomplete="name" placeholder="Jane Doe" /><small class="err" id="e-cName"></small></label>
+          <label class="fld"><span>Email address *</span><input id="cEmail" class="input" type="email" maxlength="120" autocomplete="email" placeholder="jane@example.com" /><small class="err" id="e-cEmail"></small></label>
+        </div>
+        <label class="fld"><span>Subject *</span><input id="cTitle" class="input" maxlength="120" placeholder="e.g. Payment failed but amount deducted" /><small class="err" id="e-cTitle"></small></label>
+        <label class="fld"><span>Category</span>
+          <select id="cCategory" class="select"><option value="">Let AI decide</option><option>Technical</option><option>Billing</option><option>Account</option><option>General</option></select></label>
+        <label class="fld"><span>Describe the problem *</span><textarea id="cDesc" class="input" rows="6" maxlength="2000" placeholder="Please include what happened, when it happened and any amounts or error messages."></textarea><small class="err" id="e-cDesc"></small></label>
+
+        <div id="aiPreview" class="ai-preview" hidden></div>
+
+        <div class="actions">
+          <button type="button" class="btn btn-outline" id="analyzeBtn"><span data-icon="sparkles" data-size="16"></span>Analyze with AI</button>
+          <button type="submit" class="btn btn-primary">Submit request</button>
+        </div>
+      </form>
+
+      <div id="customerSuccess" class="success" hidden></div>
+    </section>
+  </main>
+
+  <footer class="site-footer"><div class="container">© <span id="year"></span> Vision Support · Customers do not need an account to submit a request.</div></footer>
+</div>
+
+<!-- =====================================================
+     2) SUPPORT TEAM LOGIN  (Name + Email only)
+     ===================================================== -->
+<div id="view-login" class="login-page" hidden>
+  <div class="login-box card">
+    <a class="back" href="#/"><span data-icon="back" data-size="16"></span>Back to website</a>
+    <div class="login-head">
+      <span class="logo big" data-icon="shield" data-size="26"></span>
+      <h1>Support Team Login</h1>
+      <p class="muted">Authorized support staff only.</p>
+    </div>
+    <form id="loginForm" novalidate>
+      <label class="fld"><span>Name</span><input id="lName" class="input" maxlength="80" autocomplete="name" placeholder="Your name" /><small class="err" id="e-lName"></small></label>
+      <label class="fld"><span>Email ID</span><input id="lEmail" class="input" type="email" maxlength="120" autocomplete="email" placeholder="name@visionsupport.com" /><small class="err" id="e-lEmail"></small></label>
+      <p class="err block" id="loginError" hidden></p>
+      <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+    </form>
+    <p class="demo-hint"><b>Demo access:</b> <code>support@visionsupport.com</code> (any name). Authorized emails are configured in <code>script.js</code>.</p>
+  </div>
+</div>
+
+<!-- =====================================================
+     3) SUPPORT TEAM PORTAL  (after login)
+     ===================================================== -->
+<div id="view-support" class="layout" hidden>
+  <aside class="sidebar">
+    <a class="brand light" href="#/support"><span class="logo" data-icon="shield" data-size="20"></span>Vision Support</a>
+    <nav class="side-nav">
+      <a href="#/support" data-nav="dashboard"><span data-icon="dashboard"></span>Dashboard</a>
+      <a href="#/support/tickets" data-nav="tickets"><span data-icon="ticket"></span>All Tickets</a>
+      <a href="#/" target="_blank" rel="noopener"><span data-icon="globe"></span>Customer site</a>
+    </nav>
+    <div class="agent-box">
+      <div class="avatar" id="agentAvatar"></div>
+      <div class="agent-info"><b id="agentName"></b><span id="agentEmail"></span></div>
+      <button class="icon-btn" id="logoutBtn" title="Log out" aria-label="Log out"><span data-icon="logout"></span></button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="search"><span data-icon="search" data-size="16"></span><input id="globalSearch" type="search" placeholder="Search tickets, customers, ticket ID…" aria-label="Search tickets" /></div>
+      <button class="btn btn-outline" id="settingsBtn"><span data-icon="sliders" data-size="16"></span>AI settings</button>
+    </header>
+
+    <main class="content">
+      <!-- Dashboard -->
+      <section id="p-dashboard" hidden>
+        <div class="page-head"><div><h1>Dashboard</h1><p class="muted">Overview of every customer ticket submitted through the website.</p></div>
+          <a class="btn btn-primary" href="#/support/tickets">View all tickets</a></div>
+        <div class="stats" id="stats"></div>
+        <div class="grid grid-wide">
+          <div class="card pad"><div class="card-title"><span class="ai-ic" data-icon="sparkles" data-size="16"></span><h2>AI insights</h2><span class="tag">Built-in AI engine</span></div><ul class="insights" id="aiBrief"></ul></div>
+          <div class="card pad"><h2>Status overview</h2><div id="chartStatus"></div></div>
+        </div>
+        <div class="grid grid-wide">
+          <div class="card pad"><h2>Tickets received · last 7 days</h2><div id="chartTrend"></div></div>
+          <div class="card pad"><h2>By category</h2><div id="chartCategory"></div></div>
+        </div>
+        <div class="grid grid-wide-rev">
+          <div class="card pad"><h2>By priority</h2><div id="chartPriority"></div></div>
+          <div class="card pad"><h2>Needs attention</h2><div id="attention"></div></div>
+        </div>
+        <div class="card"><div class="card-head"><h2>Recent tickets</h2><a class="link" href="#/support/tickets">View all →</a></div><div id="recent"></div></div>
+      </section>
+
+      <!-- All tickets -->
+      <section id="p-tickets" hidden>
+        <div class="page-head"><div><h1>All Tickets</h1><p class="muted">Every complaint and support request from customers.</p></div>
+          <button class="btn btn-outline" id="exportBtn"><span data-icon="download" data-size="16"></span>Export CSV</button></div>
+        <div class="card pad toolbar">
+          <input id="fq" class="input" placeholder="Search by title, description, customer or ID…" />
+          <select id="fs" class="select" aria-label="Status"></select>
+          <select id="fc" class="select" aria-label="Category"></select>
+          <select id="fp" class="select" aria-label="Priority"></select>
+          <select id="fo" class="select" aria-label="Sort"><option value="new">Newest first</option><option value="old">Oldest first</option><option value="prio">Highest priority</option></select>
+        </div>
+        <div class="card" id="ticketResults"></div>
+      </section>
+
+      <!-- Ticket details (rendered by script.js) -->
+      <section id="p-detail" hidden></section>
+    </main>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<script src="script.js"></script>
+</body>
+</html>
